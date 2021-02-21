@@ -15,7 +15,7 @@ class ParseOptions
     @options.inputFile = args.first
 
     opt_parser = OptionParser.new do |opts|
-      opts.banner = "Usage: < input.csv"
+      opts.banner = "Usage: ./command.rb client.csv"
       opts.separator ""
     end
 
@@ -28,7 +28,6 @@ end
 parseOption = ParseOptions.new
 options = parseOption.parse(ARGV)
 filehandler = FileHandler.new(options)
-p filehandler.filename
 if options.inputFile && !options.inputFile.empty?
   filehandler.parse_csv
 end
