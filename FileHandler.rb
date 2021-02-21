@@ -30,7 +30,7 @@ class FileHandler
             if geo_info = geocode(row)
               @valid_rows_processed+= 1
               row << geo_info
-              p row.to_s
+              print row.to_csv
             else
               @invalid_rows +=1
             end
