@@ -21,7 +21,7 @@ class FileHandler
 
   def parse_csv
     begin
-      file = File.open("/#{filename}", "r")
+      file = File.open("./#{filename}", "r")
 
       CSV.foreach(file, headers: true, skip_blanks: true) do |row|
         if clean_data(row)
