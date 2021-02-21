@@ -3,7 +3,7 @@ require 'csv'
 require 'uri'
 require 'net/http'
 require 'json'
-require_relative 'utils/UtilityFunctions'
+require_relative 'Utils/UtilityFunctions'
 class FileHandler
 
   include Utils::UtilityFunctions

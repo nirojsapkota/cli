@@ -18,7 +18,9 @@ module Utils
   # considering Residential Address to validate against postcode combination
   def valid_postcode_location(data)
     p data
-    csv = CSV.read("utils/au-towns-sample.csv", headers: true)
+    au_data_file_path = File.join(File.dirname(__FILE__), "au-towns-sample.csv")
+    csv = CSV.read(au_data_file_path, headers: true)
+    # csv = CSV.read("utils/au-towns-sample.csv", headers: true)
     if csv.find { |row| row["postcode"] == data["Residential Address Postcode"] && row["name"].downcase == data["Residential Address Locality"].downcase }
       return true
     else
