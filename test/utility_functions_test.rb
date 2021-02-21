@@ -1,21 +1,22 @@
 require_relative '../Utils/UtilityFunctions'
 require 'csv'
+require 'webmock/rspec'
 describe Utils::UtilityFunctions do
 
   let!(:dummy_class) { Class.new { include Utils::UtilityFunctions } }
-  let!(:some_obj) { dummy_class.new }
+  let!(:util_obj) { dummy_class.new }
 
   let!(:r_headers) {["Email", "First Name", "Last Name", "Residential Address Street", "Residential Address Locality"]}
   let!(:r_data) {['', 'John', 'Doe', 'Abc', 'ARCTURUS']}
   let!(:invalidRow) {CSV::Row.new(r_headers, r_data)}
 
   it 'should clean_data' do
-    rs = some_obj.clean_data(invalidRow)
+    rs = util_obj.clean_data(invalidRow)
     expect(rs).to be_nil
   end
 
   it 'should return proper query obj' do
-    q = some_obj.query_param("some_address")
+    q = util_obj.query_param("some_address")
     expect(q).to include(query: 'some_address')
   end
 
@@ -25,7 +26,7 @@ describe Utils::UtilityFunctions do
     r_data << '4722'
 
     invalidRow = CSV::Row.new(r_headers, r_data)
-    q = some_obj.valid_postcode_location(invalidRow)
+    q = util_obj.valid_postcode_location(invalidRow)
     expect(q).to be true
   end
 
@@ -34,7 +35,29 @@ describe Utils::UtilityFunctions do
     r_data << '4822'
 
     invalidRow = CSV::Row.new(r_headers, r_data)
-    q = some_obj.valid_postcode_location(invalidRow)
+    q = util_obj.valid_postcode_location(invalidRow)
+    expect(q).to be false
+  end
+
+  it 'should validate geocode' do
+    geo_response = {
+      :status => 'success',
+      :data => [{"latitude"=>-20.272893, "longitude"=>148.716829, "type"=>"locality", "name"=>"Airlie Beach", "number"=>nil, "postal_code"=>nil, "street"=>nil, "confidence"=>0.6, "region"=>"Queensland", "region_code"=>"QLD", "county"=>"Whitsunday", "locality"=>"Airlie Beach", "administrative_area"=>nil, "neighbourhood"=>nil, "country"=>"Australia", "country_code"=>"AUS", "continent"=>"Oceania", "label"=>"Airlie Beach, QLD, Australia"}]
+    }
+    stub_request(:any, "http://api.positionstack.com/v1/forward?access_key=f96643d0d2f7ac1f26a8553f8ab2fc81&limit=1&query=Abc,ARCTURUS").
+    to_return(status: 200, body: geo_response.to_json)
+    q = util_obj.geocode(invalidRow)
+    expect(q).to eq({"latitude" => -20.272893, "longitude" => 148.716829})
+  end
+
+  it 'should return false for invalid geocode' do
+    geo_response = {
+      :status => 'fail',
+      :data => []
+    }
+    stub_request(:any, "http://api.positionstack.com/v1/forward?access_key=f96643d0d2f7ac1f26a8553f8ab2fc81&limit=1&query=Abc,ARCTURUS").
+    to_return(status: 400, body: geo_response.to_json)
+    q = util_obj.geocode(invalidRow)
     expect(q).to be false
   end
 
